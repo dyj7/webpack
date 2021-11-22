@@ -31,8 +31,7 @@ module.exports = {
           // 解决：关闭url-loader的es6模块化，使用commonjs解析
           esModule: false,
           // 给图片进行重命名
-          // [hash:10]取图片的hash的前10位
-          // [ext]取文件原来扩展名
+          // [hash:10]取图片的hash的前10位,[ext]取文件原来扩展名
           name: '[hash:10].[ext]'
         }
       },

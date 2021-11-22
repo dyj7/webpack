@@ -51,8 +51,18 @@
 - 所有构建工具都是基于nodejs平台运行的~模块化默认采用commonjs。
 
 ```js
-// resolve用来拼接绝对路径的方法
+/*
+运行项目指令：
+    webpack 会将打包结果输出出去
+    npx webpack-dev-server 只会在内存中编译打包，没有输出
+
+  loader: 1. 下载   2. 使用（配置loader）
+  plugins: 1. 下载  2. 引入  3. 使用
+*/
+// resolve用来拼接绝对路径的方法,nodejs模块:path
 const { resolve } = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+
 module.exports = {
   // webpack配置
   // 入口起点
@@ -91,15 +101,73 @@ module.exports = {
           // 需要下载 less-loader和less
           'less-loader'
         ]
+      },
+      {
+        // 问题：默认处理不了html中img图片
+        // 处理图片资源
+        test: /\.(jpg|png|gif)$/,
+        // 使用一个loader
+        // 下载 url-loader file-loader(url-loader在file-loader的基础上可以将图片转化为base64编码)
+        loader: 'url-loader',
+        options: {
+          // 图片大小小于8kb，就会被base64处理
+          // 优点: 减少请求数量（减轻服务器压力）
+          // 缺点：图片体积会更大（文件请求速度更慢）
+          limit: 8 * 1024,
+          // 问题：因为url-loader默认使用es6模块化解析，而html-loader引入图片是commonjs
+          // 解析时会出问题：[object Module]
+          // 解决：关闭url-loader的es6模块化，使用commonjs解析
+          esModule: false,
+          // 给图片进行重命名
+          // [hash:10]取图片的hash的前10位
+          // [ext]取文件原来扩展名
+          name: '[hash:10].[ext]',
+        outputPath: 'images'
+        }
+      },
+      {
+        test: /\.html$/,
+        // 处理html文件的img图片（负责引入img，从而能被url-loader进行处理）
+        loader: 'html-loader'
+      },
+      // 打包其他资源(除了html/js/css资源以外的资源)
+      {
+        // 排除css/js/html资源
+        exclude: /\.(html|js|css|less|jpg|png|gif)/,
+        loader: 'file-loader',
+        options: {
+          name: '[hash:10].[ext]',
+          outputPath: 'media'
+        }
       }
     ]
   },
   // plugins的配置
   plugins: [
-    // 详细plugins的配置
+    // plugins的配置
+    // html-webpack-plugin
+    // 功能：默认会创建一个空的HTML，自动引入打包输出的所有资源（JS/CSS）
+    // 需求：需要有结构的HTML文件
+    new HtmlWebpackPlugin({
+      // 复制 './src/index.html' 文件，并自动引入打包输出的所有资源（JS/CSS）
+      template: './src/index.html'
+    })
   ],
   // 模式
-  mode: 'development', // 开发模式
-  // mode: 'production' //生产模式
+  mode: 'development', // 开发模式, mode: 'production' //生产模式
+
+  // 开发服务器 devServer：用来自动化（自动编译，自动打开浏览器，自动刷新浏览器~~）
+  // 特点：只会在内存中编译打包，不会有任何输出
+  // 启动devServer指令为：npx webpack-dev-server
+  devServer: {
+    // 项目构建后路径
+    contentBase: resolve(__dirname, 'build'),
+    // 启动gzip压缩
+    compress: true,
+    // 端口号
+    port: 3000,
+    // 自动打开浏览器
+    open: true
+  }
 }
 ```
