@@ -18,8 +18,7 @@
 
 ### Loader
 
-将不同类型的文件转换为 webpack 可识别的模块。Loader 让 webpack 能够去处理那些非 JavaScript 文件 (webpack 自身只理解 JavaScript)
-
+将不同类型的文件转换为 webpack 可识别的模块。Loader 让 webpack 能够去处理那些非 JavaScript（Json） 文件。
 ### Plugins
 
 插件(Plugins)可以用于执行范围更广的任务。插件的范围包括，从打包优化和压缩， 一直到重新定义环境中的变量等。
@@ -28,10 +27,10 @@
 
 模式(Mode)指示 webpack 使用相应模式的配置(默认值设置为 production)。
 
-- development（能让代码本地调试 运行的环境）：会将 DefinePlugin 中 process.env.NODE_ENV 的值设置 为 development。启用 NamedChunksPlugin 和 NamedModulesPlugin。
-- production（能让代码优化上线 运行的环境）：会将 DefinePlugin 中 process.env.NODE_ENV 的值设置 为 production。启用 FlagDependencyUsagePlugin, FlagIncludedChunksPlugin, ModuleConcatenationPlugin, NoEmitOnErrorsPlugin, OccurrenceOrderPlugin, SideEffectsFlagPlugin 和 TerserPlugin。
+- development（能让代码本地调试运行的环境）：会将 DefinePlugin 中 process.env.NODE_ENV 的值设置 为 development。启用 NamedChunksPlugin 和 NamedModulesPlugin。
+- production（能让代码优化上线运行的环境）：会将 DefinePlugin 中 process.env.NODE_ENV 的值设置 为 production。启用 FlagDependencyUsagePlugin, FlagIncludedChunksPlugin, ModuleConcatenationPlugin, NoEmitOnErrorsPlugin, OccurrenceOrderPlugin, SideEffectsFlagPlugin 和 TerserPlugin。
 
-## 运行指令：
+## 运行指令
 
 - 开发环境：webpack ./src/index.js -o ./build/built.js --mode=development
       webpack会以 ./src/index.js 为入口文件开始打包，打包后输出到 ./build/built.js
@@ -40,27 +39,18 @@
       webpack会以 ./src/index.js 为入口文件开始打包，打包后输出到 ./build/built.js
       整体打包环境，是生产环境
 
-  1. webpack能处理js/json资源，不能处理css/img等其他资源
-  2. 生产环境和开发环境将ES6模块化编译成浏览器能识别的模块化
-  3. 生产环境比开发环境:压缩js代码。
-
 ## 使用
 
 ### webpack.config.js - webpack的配置文件
 
 - 作用: 指示 webpack 干哪些活（当运行 webpack 指令时，会加载里面的配置）
-- 所有构建工具都是基于nodejs平台运行的~模块化默认采用commonjs。
+- 基于 nodejs 平台运行的，模块化默认采用 commonjs。
 
 ### 开发环境配置
 
-- css 穿插在 js 中，导致 js 体积过大，并且由于是先加载 js 再创建 style 标签添加到 html 中，会出现闪屏现象
 
 ```js
 /*
-运行项目指令：
-    webpack 会将打包结果输出出去
-    npx webpack-dev-server 只会在内存中编译打包，没有输出
-
   loader: 1. 下载   2. 使用（配置loader）
   plugins: 1. 下载  2. 引入  3. 使用
 */
@@ -77,23 +67,18 @@ module.exports = {
     // 输出文件名
     filename: 'built.js',
     // 输出路径
-    // __dirname是nodejs的变量，代表当前文件(webpack.config.js)的目录绝对路径
     path: resolve(__dirname, 'build')
   },
   // loader的配置
   module: {
     rules: [
-      // 详细loader配置
-      // 不同文件必须配置不同loader处理
       {
-        // 匹配哪些文件
         test: /\.css$/,
-        // 使用哪些loader进行处理
         use: [
-          // use数组中loader执行顺序：从右到左，从下到上 依次执行
-          // 创建style标签，将js中的样式资源插入进行，添加到head中生效
+          // use 数组中 loader 执行顺序：从右到左，从下到上 依次执行
+          // 创建 style 标签，将 js 中的样式资源插入，添加到 head 中生效
           'style-loader',
-          // 将css文件变成commonjs模块加载js中，里面内容是样式字符串
+          // 将 css 文件变成 commonjs 模块加载 js 中，里面内容是样式字符串
           'css-loader'
         ]
       },
@@ -102,40 +87,37 @@ module.exports = {
         use: [
           'style-loader',
           'css-loader',
-          // 将less文件编译成css文件
-          // 需要下载 less-loader和less
+          // 将 less 文件编译成 css 文件
           'less-loader'
         ]
       },
       {
-        // 处理图片资源
         test: /\.(jpg|png|gif)$/,
-        //  url-loader file-loader(url-loader在file-loader的基础上可以将图片转化为base64编码)
+        //  url-loader file-loader(url-loader 在 file-loader 的基础上可以将图片转化为 base64 编码)
         loader: 'url-loader',
         options: {
-          // 图片大小小于8kb，就会被base64处理
+          // 图片大小小于8kb，进行 base64 编码处理
           // 优点: 减少请求数量（减轻服务器压力）
           // 缺点：图片体积会更大（文件请求速度更慢）
           limit: 8 * 1024,
-          // 问题：因为url-loader默认使用es6模块化解析，而html-loader引入图片是commonjs
+          // 问题：因为 url-loader 默认使用 es6 模块化解析，而 html-loader 引入图片是 commonjs
           // 解析时会出问题：[object Module]
-          // 解决：关闭url-loader的es6模块化，使用commonjs解析
+          // 解决：关闭 url-loader 的 es6 模块化，使用 commonjs 解析
           esModule: false,
           // 给图片进行重命名
-          // [hash:10]取图片的hash的前10位
-          // [ext]取文件原来扩展名
+          // [hash:10] 取图片的 hash 的前10位
+          // [ext] 取文件原来扩展名
           name: '[hash:10].[ext]',
-        outputPath: 'images'
+          outputPath: 'images'
         }
       },
       {
         test: /\.html$/,
-        // 处理html文件的img图片（负责引入img，从而能被url-loader进行处理）
+        // 处理 html 文件的 img 图片（负责引入 img，从而能被 url-loader 进行处理）
         loader: 'html-loader'
       },
-      // 打包其他资源(除了html/js/css资源以外的资源)
+      // 打包其他资源
       {
-        // 排除css/js/html资源
         exclude: /\.(html|js|css|less|jpg|png|gif)/,
         loader: 'file-loader',
         options: {
@@ -145,12 +127,8 @@ module.exports = {
       }
     ]
   },
-  // plugins的配置
   plugins: [
-    // plugins的配置
-    // html-webpack-plugin
     // 功能：默认会创建一个空的HTML，自动引入打包输出的所有资源（JS/CSS）
-    // 需求：需要有结构的HTML文件
     new HtmlWebpackPlugin({
       // 复制 './src/index.html' 文件，并自动引入打包输出的所有资源（JS/CSS）
       template: './src/index.html'
@@ -159,13 +137,13 @@ module.exports = {
   // 模式
   mode: 'development', // 开发模式, mode: 'production' //生产模式
 
-  // 开发服务器 devServer：用来自动化（自动编译，自动打开浏览器，自动刷新浏览器~~）
+  // devServer：自动编译，自动打开浏览器，自动刷新浏览器
   // 特点：只会在内存中编译打包，不会有任何输出
-  // 启动devServer指令为：npx webpack-dev-server
+  // 启动 devServer 指令为：npx webpack-dev-server
   devServer: {
-    // 项目构建后路径
+    // 运行项目的目录
     contentBase: resolve(__dirname, 'build'),
-    // 启动gzip压缩
+    // 启动 gzip 压缩
     compress: true,
     // 端口号
     port: 3000,
@@ -177,27 +155,33 @@ module.exports = {
 
 ### 生产环境配置
 
+- 开发环境问题：
+  - css 穿插在 js 中，导致 js 体积过大
+  - 由于是先加载 js 再创建 style 标签添加到 html 中，会出现闪屏现象
+  - 未压缩
+  - 兼容性问题
+
 ```js
 const { resolve } = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const OptimizeCssAssetsWebpackPlugin = require('optimize-css-assets-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
-// 定义nodejs环境变量：决定使用browserslist的哪个环境
+// 定义 nodejs 环境变量：决定使用 browserslist 的哪个环境
 process.env.NODE_ENV = 'production';
 
-// 复用loader
+// 复用 loader
 const commonCssLoader = [
-  // 提取js中的css成单独文件(取代style-loader)
+  // 提取 js 中的 css 成单独文件(取代 style-loader)
   MiniCssExtractPlugin.loader,
   'css-loader',
   {
     // css兼容性处理：postcss --> postcss-loader postcss-preset-env(插件)
-    // 帮postcss找到package.json中browserslist里面的配置，通过配置加载指定的css兼容性样式
-    // loader: 'postcss-loader',
+    // 帮 postcss 找到 package.json 中 browserslist 里面的配置，通过配置加载指定的 css 兼容性样式
+    loader: 'postcss-loader',
     options: {
       ident: 'postcss',
-      // postcss的插件
+      // postcss 的插件
       plugins: () => [require('postcss-preset-env')()]
     }
   }
@@ -220,20 +204,15 @@ module.exports = {
         use: [...commonCssLoader, 'less-loader']
       },
       /*
-        正常来讲，一个文件只能被一个loader处理。
-        当一个文件要被多个loader处理，那么一定要指定loader执行的先后顺序：先执行eslint 在执行babel
+        当一个文件要被多个loader处理，那么一定要指定loader执行的先后顺序：先执行eslint 再执行babel
       */
       {
-      /*
-        语法检查： eslint-loader  eslint
-          注意：只检查自己写的源代码，第三方的库是不用检查的
+      /* 语法检查： eslint-loader  eslint
           设置检查规则：
-            package.json中eslintConfig中设置~
+            package.json中eslintConfig中设置
               "eslintConfig": {
                 "extends": "airbnb-base"
-              }
-            airbnb --> eslint-config-airbnb-base  eslint-plugin-import eslint
-      */
+              }*/
         test: /\.js$/,
         exclude: /node_modules/,
         // 优先执行
@@ -249,8 +228,8 @@ module.exports = {
           1. 基本js兼容性处理 --> @babel/preset-env
             问题：只能转换基本语法，如promise高级语法不能转换
           2. 全部js兼容性处理 --> @babel/polyfill
-            问题：我只要解决部分兼容性问题，但是将所有兼容性代码全部引入，体积太大了~（import '@babel/polyfill';）
-          3. 需要做兼容性处理的就做：按需加载  --> core-js
+            问题：解决部分兼容性问题，但是会将所有兼容性代码全部引入，体积太大（在 js 文件中：import '@babel/polyfill';）
+          3. 按需加载  --> core-js
       */
         test: /\.js$/,
         exclude: /node_modules/,
@@ -319,7 +298,7 @@ module.exports = {
       }
     })
   ],
-  // 生产环境下会自动压缩js代码
+  // 生产环境下会自动压缩 js 代码
   mode: 'production'
 };
 ```
