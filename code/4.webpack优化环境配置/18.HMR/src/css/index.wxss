@@ -1,0 +1,11 @@
+#box {
+  width: 100px;
+  height: 200px;
+  background-image: url('../imgs/angular.jpg');
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+img {
+  width: 100px;
+  height: 100px;
+}
