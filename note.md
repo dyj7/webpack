@@ -19,6 +19,7 @@
 ### Loader
 
 将不同类型的文件转换为 webpack 可识别的模块。Loader 让 webpack 能够去处理那些非 JavaScript（Json） 文件。
+
 ### Plugins
 
 插件(Plugins)可以用于执行范围更广的任务。插件的范围包括，从打包优化和压缩， 一直到重新定义环境中的变量等。
@@ -39,6 +40,10 @@
       webpack会以 ./src/index.js 为入口文件开始打包，打包后输出到 ./build/built.js
       整体打包环境，是生产环境
 
+### 执行流程
+
+webpack 启动后会在 entry 里配置的 module 开始递归解析 entry 所依赖的所有 module，每找到一个 module, 就会根据配置的 loader 去找相应的转换规则，对 module 进行转换后在解析当前 module 所依赖的 module，这些模块会以 entry 为分组，一个 entry 和所有相依赖的 module 也就是一个 chunk，最后 webpack会把所有 chunk 转换成文件输出，在整个流程中 webpack 会在恰当的时机执行plugin的逻辑。
+
 ## 使用
 
 ### webpack.config.js - webpack的配置文件
@@ -47,7 +52,6 @@
 - 基于 nodejs 平台运行的，模块化默认采用 commonjs。
 
 ### 开发环境配置
-
 
 ```js
 /*
@@ -156,10 +160,10 @@ module.exports = {
 ### 生产环境配置
 
 - 开发环境问题：
-  - css 穿插在 js 中，导致 js 体积过大
-  - 由于是先加载 js 再创建 style 标签添加到 html 中，会出现闪屏现象
-  - 未压缩
-  - 兼容性问题
+    - css 穿插在 js 中，导致 js 体积过大
+    - 由于是先加载 js 再创建 style 标签添加到 html 中，会出现闪屏现象
+    - 未压缩
+    - 兼容性问题
 
 ```js
 const { resolve } = require('path');
